@@ -1,29 +1,43 @@
-const Person = require('../models/Person.js');
+const db = require('../models/');
 
-module.exports.register = (req, res) => {
-  const filter = {
-    firstName: req.body.firstName,
-    lastame: req.body.lastName
-  };
-  Person.findOne(filter, (err, pers) => {
-    if (pers) {
-      return res.status(500).send(' status: Error: duplicate entry.');
-    }
-    Person.create(req.body, (err, result) => {
-      console.log(result);
-      if (err) return err;
-      return res.status(200).send(result);
-    });
-  });
-};
-module.exports.getall = (req, res) => {
-  Person.find({}).then(console.log(res));
-};
 module.exports = {
   findAll: function(req, res) {
-    db.Book.find(req.query)
+    db.Person.find(req.query)
       .sort({ date: -1 })
+      .then(dbModel => res.json(dbModel))
+      .catch(err => res.status(422).json(err));
+  },
+  findById: function(req, res) {
+    db.Person.findById(req.params.id)
+      .then(dbModel => res.json(dbModel))
+      .catch(err => res.status(422).json(err));
+  },
+  create: function(req, res) {
+    db.Person.create(req.body)
+      .then(dbModel => res.json(dbModel))
+      .catch(err => res.status(422).json(err));
+  },
+  update: function(req, res) {
+    db.Person.findOneAndUpdate({ _id: req.params.id }, req.body)
+      .then(dbModel => res.json(dbModel))
+      .catch(err => res.status(422).json(err));
+  },
+  remove: function(req, res) {
+    db.Person.findById(req.params.id)
+      .then(dbModel => dbModel.remove())
       .then(dbModel => res.json(dbModel))
       .catch(err => res.status(422).json(err));
   }
 };
+
+// const person = {
+//   firstName: req.body.firstName,
+//   lastName: req.body.lastName,
+//   address: req.body.address,
+//   stateProvence: req.body.stateProvence,
+//   city: req.body.city,
+//   postalCode: req.body.stateProvence,
+//   email: req.body.email,
+//   mobile: req.body.mobile,
+//   role: req.body.role
+// };

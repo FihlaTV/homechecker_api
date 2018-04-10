@@ -13,6 +13,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const passport = require('passport');
 const expressValidator = require('express-validator');
+const router = require('express').Router();
 
 dotenv.load({ path: '.env' });
 
@@ -54,45 +55,9 @@ app.set('host', process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0');
 app.set('port', process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080);
 app.use(logger('dev'));
 app.use(bodyParser.json());
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressValidator());
-app.use(
-  session({
-    resave: true,
-    saveUninitialized: true,
-    secret: process.env.SESSION_SECRET,
-    cookie: { maxAge: 1209600000 }, // two weeks in milliseconds
-    store: new MongoStore({
-      url: process.env.MONGODB_URI,
-      autoReconnect: true
-    })
-  })
-);
-
-app.use(flash());
-
-app.use((req, res, next) => {
-  res.locals.user = req.user;
-  next();
-});
-app.use((req, res, next) => {
-  // After successful login, redirect back to the intended page
-  if (
-    !req.user &&
-    req.path !== '/login' &&
-    req.path !== '/signup' &&
-    !req.path.match(/^\/auth/) &&
-    !req.path.match(/\./)
-  ) {
-    req.session.returnTo = req.originalUrl;
-  } else if (
-    req.user &&
-    (req.path === '/account' || req.path.match(/^\/api/))
-  ) {
-    req.session.returnTo = req.originalUrl;
-  }
-  next();
-});
 app.use(
   express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 })
 );
@@ -101,12 +66,23 @@ app.use(
  * Primary app routes.
  */
 
-//HOMECHECKER:
+// HOMECHECKER:
 app.post('/api/auth', authController.login);
 app.post('/api/user', authController.register);
-app.post('/api/person', persController.register);
 
-app.get('/api/person', persController.getall);
+// PERSON
+// app.get('/api/person', persController.findAll);
+// app.get('/api/person', persController.findById);
+router
+  .route('/api/person')
+  .get(persController.findAll)
+  .post(persController.create);
+
+router
+  .route('/api/person/:id')
+  .get(persController.findById)
+  .put(persController.update)
+  .delete(persController.remove);
 
 /*
  * Start Express server.
@@ -120,5 +96,5 @@ app.listen(app.get('port'), () => {
   );
   console.log('  Press CTRL-C to stop\n');
 });
-
+app.use('/', router);
 module.exports = app;

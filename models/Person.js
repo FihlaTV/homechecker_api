@@ -1,21 +1,22 @@
-const mongoose = require("mongoose");
-
-const personSchema = new mongoose.Schema(
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const personSchema = new Schema(
   {
-    firstName: String,
-    lastName: String,
-    address: String,
-    stateProvence: String,
-    city: String,
-    postalCode: String,
-    email: String,
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    address: { type: String, required: true },
+    stateProvence: { type: String, required: true },
+    city: { type: String, required: true },
+    postalCode: { type: String, required: true },
+    email: { type: String, required: true },
     mobile: String,
-    role: String
+    role: { type: String, required: true },
+    date: { type: Date, default: Date.now }
   },
   {
-    collection: "Persons"
+    collection: 'Persons'
   }
 );
 
-const Person = mongoose.model("Persons", personSchema);
+const Person = mongoose.model('Persons', personSchema);
 module.exports = Person;
